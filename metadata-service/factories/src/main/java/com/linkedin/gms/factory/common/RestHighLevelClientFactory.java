@@ -3,6 +3,11 @@ package com.linkedin.gms.factory.common;
 import com.linkedin.gms.factory.auth.AwsRequestSigningApacheInterceptor;
 import com.linkedin.metadata.spring.YamlPropertySourceFactory;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import javax.annotation.Nonnull;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -23,7 +28,9 @@ import org.apache.http.nio.conn.SchemeIOSessionStrategy;
 import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.nio.reactor.IOReactorExceptionHandler;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
+import org.apache.http.ssl.TrustStrategy;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.RestClientBuilder;
 import org.opensearch.client.RestHighLevelClient;
@@ -133,8 +140,13 @@ public class RestHighLevelClientFactory {
    * @return
    */
   private NHttpClientConnectionManager createConnectionManager() throws IOReactorException {
-    SSLContext sslContext = SSLContexts.createDefault();
-    HostnameVerifier hostnameVerifier = new DefaultHostnameVerifier(PublicSuffixMatcherLoader.getDefault());
+    SSLContext sslContext = null;
+    try {
+      sslContext = new SSLContextBuilder().loadTrustMaterial(null, (arg0, arg1) -> true).build();
+    } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+      throw new RuntimeException(e);
+    }
+    HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
     SchemeIOSessionStrategy sslStrategy =
         new SSLIOSessionStrategy(sslContext, null, null, hostnameVerifier);
 

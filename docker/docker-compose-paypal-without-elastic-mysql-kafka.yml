@@ -1,0 +1,67 @@
+# Docker compose file covering DataHub's default configuration, which is to run all containers on a single host.
+
+# Please see the README.md for instructions as to how to use and customize.
+
+# NOTE: This file will cannot build! No dockerfiles are set. See the README.md in this directory.
+---
+version: '3.9'
+services:
+  datahub-frontend-react:
+    container_name: datahub-frontend-react
+    hostname: datahub-frontend-react
+    image: ${DATAHUB_FRONTEND_IMAGE:-linkedin/datahub-frontend-react}:debug
+    ports:
+      - ${DATAHUB_MAPPED_FRONTEND_PORT:-9002}:9002
+    build:
+      context: ../
+      dockerfile: docker/datahub-frontend/Dockerfile
+      args:
+        APP_ENV: dev
+    env_file: datahub-frontend/env/docker.env
+    depends_on:
+      datahub-gms:
+        condition: service_healthy
+    volumes:
+      - ${HOME}/.datahub/plugins:/etc/datahub/plugins
+
+  datahub-gms:
+    image: linkedin/datahub-gms:debug
+    hostname: datahub-gms
+    ports:
+      - ${DATAHUB_MAPPED_GMS_DEBUG_PORT:-5001}:5001
+      - ${DATAHUB_MAPPED_GMS_PORT:-8080}:8080
+    build:
+      context: datahub-gms
+      dockerfile: Dockerfile
+      args:
+        APP_ENV: dev
+    env_file: datahub-gms/env/docker-without-neo4j.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - SKIP_ELASTICSEARCH_CHECK=true
+      - SKIP_KAFKA_CHECK=true
+#      - SKIP_EBEAN_CHECK=true
+      - DATAHUB_SERVER_TYPE=${DATAHUB_SERVER_TYPE:-dev}
+      - DATAHUB_TELEMETRY_ENABLED=${DATAHUB_TELEMETRY_ENABLED:-false}
+      - METADATA_SERVICE_AUTH_ENABLED=true
+#      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5001
+      - BOOTSTRAP_SYSTEM_UPDATE_WAIT_FOR_SYSTEM_UPDATE=false
+      - SEARCH_SERVICE_ENABLE_CACHE=false
+      - LINEAGE_SEARCH_CACHE_ENABLED=false
+      - SHOW_BROWSE_V2=true
+    volumes:
+      - ./datahub-gms/start.sh:/datahub/datahub-gms/scripts/start.sh
+      - ./datahub-gms/jetty.xml:/datahub/datahub-gms/scripts/jetty.xml
+      - ./monitoring/client-prometheus-config.yaml:/datahub/datahub-gms/scripts/prometheus-config.yaml
+      - ../metadata-models/src/main/resources/:/datahub/datahub-gms/resources
+      - ../metadata-service/war/build/libs/:/datahub/datahub-gms/bin
+      - ${HOME}/.datahub/plugins:/etc/datahub/plugins
+
+networks:
+  default:
+    name: datahub_network
+volumes:
+  esdata:
+  broker:
+  zkdata:

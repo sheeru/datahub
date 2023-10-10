@@ -4,9 +4,9 @@ services:
   datahub-mae-consumer:
     container_name: datahub-mae-consumer
     hostname: datahub-mae-consumer
-    image: ${DATAHUB_MAE_CONSUMER_IMAGE:-linkedin/datahub-mae-consumer}:${DATAHUB_VERSION:-head}
+    image: ${DATAHUB_MAE_CONSUMER_IMAGE:-linkedin/datahub-mae-consumer}:debug
     ports:
-    - 9091:9091
+      - 9091:9091
     build:
       context: datahub-mae-consumer
       dockerfile: Dockerfile
@@ -14,16 +14,16 @@ services:
   datahub-mce-consumer:
     container_name: datahub-mce-consumer
     hostname: datahub-mce-consumer
-    image: ${DATAHUB_MCE_CONSUMER_IMAGE:-linkedin/datahub-mce-consumer}:${DATAHUB_VERSION:-head}
+    image: ${DATAHUB_MCE_CONSUMER_IMAGE:-linkedin/datahub-mce-consumer}:debug
     ports:
-    - 9090:9090
+      - 9090:9090
     build:
       context: ../
       dockerfile: docker/datahub-mce-consumer/Dockerfile
     env_file: datahub-mce-consumer/env/docker-without-neo4j.env
     environment:
-    - DATAHUB_SERVER_TYPE=${DATAHUB_SERVER_TYPE:-quickstart}
-    - DATAHUB_TELEMETRY_ENABLED=${DATAHUB_TELEMETRY_ENABLED:-false}
+      - DATAHUB_SERVER_TYPE=${DATAHUB_SERVER_TYPE:-quickstart}
+      - DATAHUB_TELEMETRY_ENABLED=${DATAHUB_TELEMETRY_ENABLED:-false}
 networks:
   default:
-    name: datahub_networkc
+    name: datahub_network

@@ -30,8 +30,14 @@ dependencies {
     implementation externalDependency.kafkaAvroSerde
     implementation externalDependency.protobuf
     implementation externalDependency.neo4jJavaDriver
-
-    implementation externalDependency.springKafka
+    implementation (externalDependency.kafkaClientLibraries) {
+      exclude group: "com.paypal.infra.messaging", module: "kafka-resilient-client"
+      exclude group: "org.apache.maven.plugins", module: "maven-release-plugin"
+    }
+    implementation externalDependency.kafkaSecurity
+    implementation (externalDependency.springKafka) {
+        exclude group: 'org.apache.kafka', module: 'kafka-clients'
+    }
     implementation externalDependency.springActuator
 
     implementation externalDependency.slf4jApi

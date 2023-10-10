@@ -59,7 +59,9 @@ dependencies {
   implementation externalDependency.springBeans
   implementation externalDependency.springBootAutoconfigure
   implementation externalDependency.springCore
-  implementation externalDependency.springKafka
+  implementation (externalDependency.springKafka) {
+    exclude group: 'org.apache.kafka', module: 'kafka-clients'
+  }
 
   runtimeOnly externalDependency.logbackClassic
   runtimeOnly externalDependency.mariadbConnector

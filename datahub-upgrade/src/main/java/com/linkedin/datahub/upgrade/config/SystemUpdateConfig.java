@@ -8,7 +8,6 @@ import com.linkedin.gms.factory.common.TopicConventionFactory;
 import com.linkedin.gms.factory.config.ConfigurationProvider;
 import com.linkedin.gms.factory.kafka.DataHubKafkaProducerFactory;
 import com.linkedin.gms.factory.kafka.schemaregistry.SchemaRegistryConfig;
-import com.linkedin.metadata.config.kafka.KafkaConfiguration;
 import com.linkedin.metadata.dao.producer.KafkaEventProducer;
 import com.linkedin.metadata.dao.producer.KafkaHealthChecker;
 import com.linkedin.metadata.version.GitVersion;
@@ -57,9 +56,8 @@ public class SystemUpdateConfig {
   protected KafkaEventProducer duheKafkaEventProducer(@Qualifier("configurationProvider") ConfigurationProvider provider,
                                                       KafkaProperties properties,
                                                       @Qualifier("duheSchemaRegistryConfig") SchemaRegistryConfig duheSchemaRegistryConfig) {
-    KafkaConfiguration kafkaConfiguration = provider.getKafka();
     Producer<String, IndexedRecord> producer = new KafkaProducer<>(
-            DataHubKafkaProducerFactory.buildProducerProperties(duheSchemaRegistryConfig, kafkaConfiguration, properties));
+            DataHubKafkaProducerFactory.buildProducerProperties(provider, topicConvention));
     return new KafkaEventProducer(producer, topicConvention, kafkaHealthChecker);
   }
 }

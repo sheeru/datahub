@@ -35,7 +35,12 @@ dependencies {
   implementation externalDependency.javatuples
   api externalDependency.javaxValidation
   runtimeOnly externalDependency.jna
-  api externalDependency.kafkaClients
+  api externalDependency.kafkaClientsPayPal
+  implementation(externalDependency.kafkaClientLibraries) {
+    exclude group: "com.paypal.infra.messaging", module: "kafka-resilient-client"
+    exclude group: "org.apache.maven.plugins", module: "maven-release-plugin"
+  }
+  implementation externalDependency.kafkaSecurity
   api externalDependency.ebean
   enhance externalDependency.ebeanAgent
   implementation externalDependency.ebeanDdl

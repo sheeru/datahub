@@ -20,7 +20,9 @@ dependencies {
         exclude module: "spring-boot-starter-tomcat"
     }
     implementation externalDependency.springBootStarterJetty
-    implementation externalDependency.springKafka
+    implementation (externalDependency.springKafka) {
+        exclude group: 'org.apache.kafka', module: 'kafka-clients'
+    }
     implementation externalDependency.springBootAutoconfigure
     implementation externalDependency.springActuator
     implementation spec.product.pegasus.restliDocgen

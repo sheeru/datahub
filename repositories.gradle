@@ -11,6 +11,12 @@ repositories {
     maven {
         url "https://linkedin.jfrog.io/artifactory/open-source/" // GMA, pegasus
     }
+    maven {
+        url "https://nexus.paypal.com/nexus/content/groups/public-all/"
+    }
+    maven {
+        url "https://nexus.paypal.com/nexus/content/repositories/snapshots/"
+    }
 }
 
 try {

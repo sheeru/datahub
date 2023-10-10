@@ -62,7 +62,12 @@ dependencies {
   implementation externalDependency.playServer
   implementation externalDependency.playAkkaHttpServer
   implementation externalDependency.playFilters
-  implementation externalDependency.kafkaClients
+  implementation externalDependency.kafkaClientsPayPal
+  implementation(externalDependency.kafkaClientLibraries) {
+    exclude group: "com.paypal.infra.messaging", module: "kafka-resilient-client"
+    exclude group: "org.apache.maven.plugins", module: "maven-release-plugin"
+  }
+  implementation externalDependency.kafkaSecurity
   implementation externalDependency.awsMskIamAuth
 
   testImplementation 'org.seleniumhq.selenium:htmlunit-driver:2.67.0'

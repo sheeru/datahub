@@ -5,6 +5,7 @@ set -e
 : ${DATAHUB_ANALYTICS_ENABLED:=true}
 : ${USE_AWS_ELASTICSEARCH:=false}
 : ${ELASTICSEARCH_INSECURE:=false}
+: ${ELASTICSEARCH_USE_SSL:=true}
 
 # protocol: http or https?
 if [[ $ELASTICSEARCH_USE_SSL == true ]]; then
@@ -14,8 +15,9 @@ else
 fi
 echo -e "going to use protocol: $ELASTICSEARCH_PROTOCOL"
 
+ELASTICSEARCH_HOST=msmaster.qa.paypal.com:13226/v2/tenant/worldready8-qa/proxy
 # Elasticsearch URL to be suffixed with a resource address
-ELASTICSEARCH_URL="$ELASTICSEARCH_PROTOCOL://$ELASTICSEARCH_HOST:$ELASTICSEARCH_PORT"
+ELASTICSEARCH_URL="$ELASTICSEARCH_PROTOCOL://$ELASTICSEARCH_HOST"
 
 # set auth header if none is given
 if [[ -z $ELASTICSEARCH_AUTH_HEADER ]]; then
@@ -34,7 +36,7 @@ fi
 # will be using this for all curl communication with Elasticsearch:
 CURL_ARGS=(
   --silent
-  --header "$ELASTICSEARCH_AUTH_HEADER"
+  --header \"$ELASTICSEARCH_AUTH_HEADER\"
 )
 # ... also optionally use --insecure
 if [[ $ELASTICSEARCH_INSECURE == true ]]; then
@@ -61,7 +63,8 @@ function create_if_not_exists {
   RESOURCE_DEFINITION_NAME="$2"
 
   # query ES to see if the resource already exists
-  RESOURCE_STATUS=$(curl "${CURL_ARGS[@]}" -o /dev/null -w "%{http_code}\n" "$ELASTICSEARCH_URL/$RESOURCE_ADDRESS")
+  echo -e "\n>>> curl command ${CURL_ARGS[@]}"
+  RESOURCE_STATUS=$(curl --silent --header "Accept: */*"  --insecure -o /dev/null -w "%{http_code}\n" -o /dev/null -w "%{http_code}\n" "$ELASTICSEARCH_URL/$RESOURCE_ADDRESS")
   echo -e "\n>>> GET $RESOURCE_ADDRESS response code is $RESOURCE_STATUS"
 
   if [ $RESOURCE_STATUS -eq 200 ]; then
@@ -74,8 +77,9 @@ function create_if_not_exists {
     # use the file at given path as definition, but first replace all occurences of `PREFIX`
     # placeholder within the file with the actual prefix value
     TMP_SOURCE_PATH="/tmp/$RESOURCE_DEFINITION_NAME"
+    echo -e "\n >>>index definitions root: $INDEX_DEFINITIONS_ROOT and $RESOURCE_DEFINITION_NAME and $TMP_SOURCE_PATH"
     sed -e "s/PREFIX/$PREFIX/g" "$INDEX_DEFINITIONS_ROOT/$RESOURCE_DEFINITION_NAME" | tee -a "$TMP_SOURCE_PATH"
-    curl "${CURL_ARGS[@]}" -XPUT "$ELASTICSEARCH_URL/$RESOURCE_ADDRESS" -H 'Content-Type: application/json' --data "@$TMP_SOURCE_PATH"
+    curl --silent --header "Accept: */*"  --insecure -XPUT "$ELASTICSEARCH_URL/$RESOURCE_ADDRESS" -H 'Content-Type: application/json' --data "@$TMP_SOURCE_PATH"
 
   elif [ $RESOURCE_STATUS -eq 403 ]; then
     # probably authorization fail
@@ -150,11 +154,11 @@ if [[ $DATAHUB_ANALYTICS_ENABLED == true ]]; then
   fi
 else
   echo -e "\ndatahub_analytics_enabled: $DATAHUB_ANALYTICS_ENABLED"
-  DATAHUB_USAGE_EVENT_INDEX_RESPONSE_CODE=$(curl "${CURL_ARGS[@]}" -o /dev/null -w "%{http_code}" "$ELASTICSEARCH_URL/_cat/indices/${PREFIX}datahub_usage_event")
+  DATAHUB_USAGE_EVENT_INDEX_RESPONSE_CODE=$(curl --silent --header "Accept: */*"  --insecure -o /dev/null -w "%{http_code}" "$ELASTICSEARCH_URL/_cat/indices/${PREFIX}datahub_usage_event")
   if [ $DATAHUB_USAGE_EVENT_INDEX_RESPONSE_CODE -eq 404 ]
   then
     echo -e "\ncreating ${PREFIX}datahub_usage_event"
-    curl "${CURL_ARGS[@]}" -XPUT "$ELASTICSEARCH_URL/${PREFIX}datahub_usage_event"
+    curl --silent --header "Accept: */*"  --insecure -XPUT "$ELASTICSEARCH_URL/${PREFIX}datahub_usage_event"
   elif [ $DATAHUB_USAGE_EVENT_INDEX_RESPONSE_CODE -eq 200 ]; then
     echo -e "\n${PREFIX}datahub_usage_event exists"
   elif [ $DATAHUB_USAGE_EVENT_INDEX_RESPONSE_CODE -eq 403 ]; then

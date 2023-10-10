@@ -17,11 +17,10 @@ ext {
     ]
     debug_modules = quickstart_modules - [':metadata-jobs:mce-consumer-job',
                                           ':metadata-jobs:mae-consumer-job']
+    //debug_modules = [':metadata-jobs:mce-consumer-job',
+    //                                     ':metadata-jobs:mae-consumer-job']
     debug_compose_args = [
-            '-f', 'docker-compose-without-neo4j.yml',
-            '-f', 'docker-compose-without-neo4j.override.yml',
-            '-f', 'docker-compose-without-neo4j.m1.yml', // updates to mariadb
-            '-f', 'docker-compose.dev.yml'
+            '-f', 'docker-compose-paypal-without-elastic-mysql-kafka.yml'
     ]
     debug_reloadable = [
             'datahub-gms',
@@ -38,21 +37,10 @@ task quickstart(type: Exec, dependsOn: ':metadata-ingestion:install') {
     // environment "ACTIONS_VERSION", 'alpine3.17-slim'
     // environment "DATAHUB_ACTIONS_IMAGE", 'nginx'
 
-    // Elastic
-    // environment "DATAHUB_SEARCH_IMAGE", 'elasticsearch'
-    // environment "DATAHUB_SEARCH_TAG", '7.10.1'
-
-    // OpenSearch
-    environment "DATAHUB_SEARCH_IMAGE", 'opensearchproject/opensearch'
-    environment "DATAHUB_SEARCH_TAG", '2.9.0'
-    environment "XPACK_SECURITY_ENABLED", 'plugins.security.disabled=true'
-    environment "USE_AWS_ELASTICSEARCH", 'true'
-
     def cmd = [
             'source ../metadata-ingestion/venv/bin/activate && ',
             'datahub docker quickstart',
             '--no-pull-images',
-            '--standalone_consumers',
             '--version', "v${version}",
             '--dump-logs-on-failure'
     ]
@@ -75,10 +63,11 @@ task quickstartSlim(type: Exec, dependsOn: ':metadata-ingestion:install') {
             'source ../metadata-ingestion/venv/bin/activate && ',
             'datahub docker quickstart',
             '--no-pull-images',
+            '--build-locally',
             '--standalone_consumers',
             '--version', "v${version}",
             '--dump-logs-on-failure'
-    ]
+    ] + debug_compose_args
 
     commandLine 'bash', '-c', cmd.join(" ")
 }
@@ -97,7 +86,7 @@ task quickstartDebug(type: Exec, dependsOn: ':metadata-ingestion:install') {
     dependsOn(debug_modules.collect { it + ':dockerTagDebug' })
     shouldRunAfter ':metadata-ingestion:clean', 'quickstartNuke'
 
-    environment "DATAHUB_PRECREATE_TOPICS", "true"
+    environment "DATAHUB_PRECREATE_TOPICS", "false"
     environment "DATAHUB_TELEMETRY_ENABLED", "false"
     environment "DOCKER_COMPOSE_BASE", "file://${rootProject.projectDir}"
 
@@ -105,6 +94,7 @@ task quickstartDebug(type: Exec, dependsOn: ':metadata-ingestion:install') {
             'source ../metadata-ingestion/venv/bin/activate && ',
             'datahub docker quickstart',
             '--no-pull-images',
+            '--build-locally',
             '--version', "debug",
             '--dump-logs-on-failure'
     ] + debug_compose_args

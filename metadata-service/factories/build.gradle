@@ -15,6 +15,7 @@ dependencies {
 
   implementation (externalDependency.awsGlueSchemaRegistrySerde) {
     exclude group: 'org.json', module: 'json'
+    exclude group: 'org.apache.kafka', module: 'kafka-clients'
   }
   implementation externalDependency.elasticSearchRest
   implementation externalDependency.httpClient
@@ -22,9 +23,17 @@ dependencies {
   implementation (externalDependency.hazelcast) {
     exclude group: 'org.json', module: 'json'
   }
+  implementation (externalDependency.kafkaAvroSerde) {
+    exclude group: 'org.apache.kafka', module: 'kafka-clients'
+  }
   implementation externalDependency.hazelcastSpring
-  implementation externalDependency.kafkaClients
-  implementation externalDependency.kafkaAvroSerde
+  implementation externalDependency.kafkaClientsPayPal
+  implementation (externalDependency.kafkaClientLibraries) {
+    exclude group: "com.paypal.infra.messaging", module: "kafka-resilient-client"
+    exclude group: "org.apache.maven.plugins", module: "maven-release-plugin"
+  }
+  implementation externalDependency.kafkaSecurity
+
   compileOnly externalDependency.lombok
   implementation externalDependency.servletApi
   api externalDependency.springBeans
@@ -32,7 +41,9 @@ dependencies {
   implementation externalDependency.springBootStarterCache
   api externalDependency.springContext
   api externalDependency.springCore
-  api externalDependency.springKafka
+  api (externalDependency.springKafka) {
+    exclude group: 'org.apache.kafka', module: 'kafka-clients'
+  }
   api externalDependency.springWeb
   implementation externalDependency.awsPostgresIamAuth
   implementation externalDependency.awsRds

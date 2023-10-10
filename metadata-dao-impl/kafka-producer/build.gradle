@@ -7,7 +7,12 @@ dependencies {
   implementation project(':entity-registry')
   implementation project(':metadata-io')
 
-  implementation externalDependency.kafkaClients
+  implementation externalDependency.kafkaClientsPayPal
+  implementation(externalDependency.kafkaClientLibraries) {
+    exclude group: "com.paypal.infra.messaging", module: "kafka-resilient-client"
+    exclude group: "org.apache.maven.plugins", module: "maven-release-plugin"
+  }
+  implementation externalDependency.kafkaSecurity
   implementation externalDependency.springBeans
   implementation externalDependency.springContext
   implementation externalDependency.opentelemetryAnnotations

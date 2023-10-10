@@ -53,7 +53,12 @@ public class ElasticsearchSSLContextFactory {
 
     @Bean(name = "elasticSearchSSLContext")
     public SSLContext createInstance() {
-        final SSLContextBuilder sslContextBuilder = new SSLContextBuilder();
+        final SSLContextBuilder sslContextBuilder;
+        try {
+            sslContextBuilder = new SSLContextBuilder().loadTrustMaterial(null, (arg0, arg1) -> true);
+        } catch (NoSuchAlgorithmException | KeyStoreException e) {
+            throw new RuntimeException(e);
+        }
         if (sslProtocol != null) {
             sslContextBuilder.useProtocol(sslProtocol);
         }

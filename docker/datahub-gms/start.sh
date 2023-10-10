@@ -70,7 +70,7 @@ COMMON="
 
 if [[ $SKIP_ELASTICSEARCH_CHECK != true ]]; then
   exec dockerize \
-    -wait $ELASTICSEARCH_PROTOCOL://$ELASTICSEARCH_HOST:$ELASTICSEARCH_PORT -wait-http-header "$ELASTICSEARCH_AUTH_HEADER" \
+    -wait "https://msmaster.qa.paypal.com:13226/v2/tenant/worldready8-qa/proxy/" -wait-http-header "$ELASTICSEARCH_AUTH_HEADER" \
     $COMMON
 else
   exec dockerize $COMMON

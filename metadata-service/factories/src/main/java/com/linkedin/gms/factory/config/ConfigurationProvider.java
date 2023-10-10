@@ -10,6 +10,7 @@ import com.linkedin.metadata.config.ViewsConfiguration;
 import com.linkedin.metadata.config.VisualConfiguration;
 import com.linkedin.metadata.config.cache.CacheConfiguration;
 import com.linkedin.metadata.config.kafka.KafkaConfiguration;
+import com.linkedin.metadata.config.kafka.KeymakerConfiguration;
 import com.linkedin.metadata.config.search.ElasticSearchConfiguration;
 import com.linkedin.datahub.graphql.featureflags.FeatureFlags;
 import com.linkedin.metadata.spring.YamlPropertySourceFactory;
@@ -83,4 +84,9 @@ public class ConfigurationProvider {
    * Configuration for the health check server
    */
   private HealthCheckConfiguration healthCheck;
+
+  /**
+   * Configuration for PayPal Keymaker
+   */
+  private KeymakerConfiguration keymaker;
 }
